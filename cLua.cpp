@@ -1,6 +1,6 @@
 //*****************************************************************************
 //! @file
-//! @brief Simplifying interface to the Lua interpreter. (Singleton)
+//! @brief Simplifying interface to the Lua interpreter. 
 //!
 //! Copyright (C) 2007 Wounded Badger Interactive.
 //*****************************************************************************
@@ -12,11 +12,8 @@ extern "C"
 #include "lauxlib.h"
 }
 
-
 #include "cLua.h"
 #include <string.h>
-#include "Log.h"
-
 
 #ifdef PLATFORM_WINDOWS
 #include "windows.h"
@@ -32,29 +29,24 @@ extern "C"
 //! @brief Actual function that executes the Lua command "print"
 //! @param[in] L Lua context pointer
 //! @returns number of return values to Lua (0 in this case)
-extern "C" int Debug_Print(lua_State* L)
+LuaGlue(Debug_Print)
 {
    const char* pArg = luaL_optstring(L, 1, "Bad Arg in print");
-   vlog(Log::L_DEBUG, "[Lua]: %s\n", pArg);
+   printf("[Lua]: %s\n", pArg);
    return 0;
 }
 
-//! @brief Function to allow Lua scripts to run other Lua script files
-//! @param[in] L Lua context pointer
-//! @returns number of return values to Lua (0 in this case)
-extern "C" int RunScript(lua_State* L)
+LuaGlue(Version)
 {
-   CLua::Instance().RunScript(luaL_checkstring(L, 1));
+   printf("%s\n%s\n\n", LUA_COPYRIGHT, LUA_AUTHORS );
    return 0;
 }
-
 //! @brief Default commands for debugging
 luaDef DebugGlue[] =
 {
    {"Print",               Debug_Print},
    {"print",               Debug_Print},
-   {"RunScript",           RunScript},
-   // {"Version",             _Version},
+   {"Version",             Version},
 
    {NULL, NULL}
 };
@@ -67,13 +59,11 @@ static const char* spDefaultScriptHome = "./scripts/";
 //! @param[in] pError error string
 static void defaultErrorHandler(const char* pError)
 {
-   log(Log::L_ERROR, "%s\n", pError);
+   printf("%s\n", pError);
 }
 
 CLua::CLua()
 {
-   vlog(Log::L_INFO, "%s\n%s\n\n", LUA_COPYRIGHT, LUA_AUTHORS );
-
    m_pScriptContext = luaL_newstate();
    mpScriptHome = 0;
    SetHome(spDefaultScriptHome);
@@ -97,13 +87,7 @@ void CLua::SetHome(const char* pHome)
       char* pnHome = new char[strlen(spDefaultScriptHome) + 1];
       strncpy(pnHome, pHome, strlen(spDefaultScriptHome) + 1 );
       mpScriptHome = pnHome;
-
-      // set the package path for "require" keyword
-      char work[1024];
-      sprintf(work, "package.path = package.path .. \";%s?.lua\"", mpScriptHome);
-      RunString(work);
-
-      vlog(Log::L_INFO, "[Lua]: Script Home: %s\n", mpScriptHome);
+      printf("[Lua]: Script Home: %s\n", mpScriptHome);
    }
 }
 
@@ -206,11 +190,6 @@ bool CLua::AddFunction(const luaDef* pLuaDefs)
    return true;
 }
 
-const char* CLua::GetLuaFunctionName()
-{
-   return lua_tostring(m_pScriptContext, lua_upvalueindex(1));
-}
-
 const char* CLua::GetStringArgument(int num, const char* pDefault)
 {
    return luaL_optstring(m_pScriptContext, num, pDefault);
@@ -284,8 +263,3 @@ void CLua::ReportError(const char* pErrorString)
    m_pErrorHandler(pErrorString);
 }
 
-CLua& CLua::Instance()
-{
-   static CLua instance;
-   return instance;
-}

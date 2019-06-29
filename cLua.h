@@ -1,6 +1,6 @@
 //*****************************************************************************
 //! @file
-//! @brief Simplifying interface to the Lua interpreter. (Singleton)
+//! @brief Simplifying interface to the Lua interpreter. 
 //!
 //! Copyright (C) 2007 Wounded Badger Interactive.
 //*****************************************************************************
@@ -16,7 +16,7 @@ struct lua_State;
 // }
 //! @brief Shortcut to declaring Lua glue functions
 //! The Lua state (L) is never used, but is passed by Lua.
-#define LuaGlue(n) extern "C" int n(lua_State* /*L*/)
+#define LuaGlue(n) extern "C" int n(lua_State* L)
 
 extern "C"
 {
@@ -46,9 +46,8 @@ enum LuaArgType
 class CLua
 {
 public:
-   //! @brief Singleton access
-   //! @return Reference to singleton instance.
-   static CLua& Instance();
+   //! @brief constructor
+   CLua();
 
    //! @brief Destruction.
    virtual ~CLua();
@@ -73,10 +72,6 @@ public:
    //! @param[in] pLuaDefs Pointer to the luaDef strct array containg the glue info
    //! @return bool success
    bool AddFunction(const luaDef* pLuaDefs);
-
-   //! @brief Return the name of the current Lua function
-   //! @return Pointer to the UTF-8 name
-   const char* GetLuaFunctionName();
 
    //! @brief Return a string argument to a function call (with default)
    //! @param[in] num 1 based argument index
@@ -114,7 +109,6 @@ public:
 
    //! @brief Push a boolean to the Lua stack.
    //! Generally used for returning a value from a glue function to Lua.
-   //! use this for integers as well since Lua has no native integer type
    //! @param bVal value to push.
    void PushBool(bool bVal);
 
@@ -152,8 +146,6 @@ private:
    lua_State*  m_pScriptContext;
    void(*m_pErrorHandler)(const char* pError);
 
-   // Private constructor for singleton
-   CLua();
 };
 
 #endif

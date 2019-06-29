@@ -1,0 +1,10 @@
+# List out the files to be ignored by git
+**/build
+**/.vscode
+**/.vs
+**/Release
+**/x64
+**/Debug
+**/src
+**/lib
+**/include
